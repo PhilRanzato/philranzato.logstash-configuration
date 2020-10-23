@@ -5,6 +5,10 @@ os_environment:
 - key: LOGSTASH_KEYSTORE_PASS 
   value: "{{ keystore_pass }}"  
 
+logstash_user: logstash_system
+# Leave it blank if you have the builtin_passwords file
+logstash_password: ""
+
 ca:
   dir: /etc/logstash
   cert: "elastic-CA.crt"
@@ -20,6 +24,10 @@ logstash:
   keystore:
     path: "/etc/logstash/lgs.p12"
     password: "test"
+  user: "{{ logstash_user }}"
+  password: "{{ logstash_password }}"
+
+elasticsearch_http_port: "9200"
 
 # /etc/logstash/logstash.yml
 node:
@@ -36,15 +44,15 @@ xpack:
   monitoring:
       enabled: true
       elasticsearch:
-        username: logstash_system
-        password: test
+        username: "{{ logstash.user }}"
+        password: "{{ logstash.password }}"
         sniffing: false
         ssl:
           certificate_authority: "{{ ca.dir }}/{{ ca.cert }}"
           truststore:
             path: "{{ logstash.truststore.path }}"
             password: "{{ logstash.truststore.password }}"
-          kystore:
+          keystore:
             path: "{{ logstash.keystore.path }}"
             password: "{{ logstash.keystore.password }}"
           verification_mode: certificate

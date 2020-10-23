@@ -2,8 +2,11 @@
 - name: "Preflight Checks"
   include_tasks: "00-preflight-checks.yml"
   
-- name: "Creates Logstash keystore"
-  include_tasks: "01-logstash-keystore.yml"
+- name: "Get logstash user password"
+  include_tasks: "01-logstash-user.yml"
 
 - name: "Configure Logstash"
   include_tasks: "02-configure.yml"
+
+# - name: "Creates Logstash keystore"
+#   include_tasks: "99-logstash-keystore.yml"

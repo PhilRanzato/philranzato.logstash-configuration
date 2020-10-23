@@ -1,0 +1,22 @@
+---
+- name: "Slurp builtin password file"
+  slurp:
+    path: "{{ playbook_dir }}/files/builtin_passwords.json"
+  register: builtin_pass
+  when: logstash_password | length == 0
+  delegate_to: localhost
+
+- name: "Get the password of {{ logstash_user }} if the user exists"
+  when: logstash_password | length == 0
+  delegate_to: localhost
+  block:
+
+  - name: "Get the password of {{ logstash_user }}"
+    set_fact:
+      logstash_password: "{{ builtin_pass.content | b64decode | from_json | json_query(query) }}"
+    vars:
+      query: "[?user=='{{ logstash_user }}'].password"
+
+  rescue:
+  - name: "End the playbook since {{ logstash_user }} password is not present in the file"
+    meta: end_play

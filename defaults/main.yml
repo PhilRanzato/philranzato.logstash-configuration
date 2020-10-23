@@ -1,0 +1,55 @@
+---
+keystore_pass: 'L0gst4sh!'
+
+os_environment:
+- key: LOGSTASH_KEYSTORE_PASS 
+  value: "{{ keystore_pass }}"  
+
+ca:
+  dir: /etc/logstash
+  cert: "elastic-CA.crt"
+  key: "elastic-CA.key"
+
+logstash:
+  conf_dir: "/etc/logstash"
+  data_dir: "/var/lib/logstash"
+  logs_dir: "/var/log/logstash"
+  truststore:
+    path: "/etc/logstash/lgs.p12"
+    password: "test"
+  keystore:
+    path: "/etc/logstash/lgs.p12"
+    password: "test"
+
+# /etc/logstash/logstash.yml
+node:
+  name: "{{ inventory_hostname | regex_replace('\\..+', '') }}"
+
+path:
+  data: "{{ logstash.data_dir }}"
+  logs: "{{ logstash.logs_dir }}"
+
+pipeline:
+  ordered: auto
+
+xpack:
+  monitoring:
+      enabled: true
+      elasticsearch:
+        username: logstash_system
+        password: test
+        sniffing: false
+        ssl:
+          certificate_authority: "{{ ca.dir }}/{{ ca.cert }}"
+          truststore:
+            path: "{{ logstash.truststore.path }}"
+            password: "{{ logstash.truststore.password }}"
+          kystore:
+            path: "{{ logstash.keystore.path }}"
+            password: "{{ logstash.keystore.password }}"
+          verification_mode: certificate
+      collection:
+        interval: 10s
+        pipeline:
+          details:
+            enabled: true

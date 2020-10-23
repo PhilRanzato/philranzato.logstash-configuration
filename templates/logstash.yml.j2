@@ -1,0 +1,23 @@
+node.name: {{ node.name }}
+path.data: {{ logstash.data_dir }}
+path.logs: {{ logstash.logs_dir }}
+pipeline.ordered: {{ pipeline.ordered }}
+
+#
+# ------------ X-Pack Settings (not applicable for OSS build)--------------
+#
+# X-Pack Monitoring
+# https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
+xpack.monitoring.enabled: {{ xpack.monitoring.enabled | lower }}
+xpack.monitoring.elasticsearch.username: {{ xpack.monitoring.elasticsearch.username }}
+xpack.monitoring.elasticsearch.password: {{ xpack.monitoring.elasticsearch.password }}
+xpack.monitoring.elasticsearch.hosts: [{% for es in groups['elasticsearch-master'] %}"{{ hostvars[es].ansible_eth0.ipv4.address }}"{% if not loop.last %},{% endif %}{% endfor %}]
+xpack.monitoring.elasticsearch.ssl.certificate_authority: {{ xpack.monitoring.elasticsearch.ssl.certificate_authority }}
+xpack.monitoring.elasticsearch.ssl.truststore.path: {{ xpack.monitoring.elasticsearch.ssl.truststore.path }}
+xpack.monitoring.elasticsearch.ssl.truststore.password: {{ xpack.monitoring.elasticsearch.ssl.truststore.password }}
+xpack.monitoring.elasticsearch.ssl.keystore.path: {{ xpack.monitoring.elasticsearch.ssl.keystore.path }}
+xpack.monitoring.elasticsearch.ssl.keystore.password: {{ xpack.monitoring.elasticsearch.ssl.keystore.password }}
+xpack.monitoring.elasticsearch.ssl.verification_mode: {{ xpack.monitoring.elasticsearch.ssl.verification_mode }}
+xpack.monitoring.elasticsearch.sniffing: {{ xpack.monitoring.elasticsearch.sniffing | lower }}
+xpack.monitoring.collection.interval: {{ xpack.monitoring.collection.interval}}
+xpack.monitoring.collection.pipeline.details.enabled: {{ xpack.monitoring.collection.pipeline.details.enabled }}

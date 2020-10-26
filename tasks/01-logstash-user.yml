@@ -15,7 +15,7 @@
     set_fact:
       logstash_password: "{{ builtin_pass.content | b64decode | from_json | json_query(query) }}"
     vars:
-      query: "[?user=='{{ logstash_user }}'].password"
+      query: "[?user=='{{ logstash_user }}'].password | [0]"
 
   rescue:
   - name: "End the playbook since {{ logstash_user }} password is not present in the file"

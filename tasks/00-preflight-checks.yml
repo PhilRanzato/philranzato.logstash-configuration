@@ -9,7 +9,7 @@
   - ansible_distribution != 'CentOS' and ansible_distribution != 'RedHat' 
 
 - name: "Ensure builtin_passwords file exists on the ansible master"
-  when: logstash_password | length == 0
+  when: logstash_system_password | length == 0
   delegate_to: localhost
   block:
   - name: "Check if the file exists"

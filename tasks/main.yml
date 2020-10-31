@@ -9,7 +9,10 @@
   include_tasks: "02-elastic-password.yml"
 
 - name: "Create Logstash Writer role and Logstash internal user"
-  include_tasks: "03-logstash-keystore.yml"
+  include_tasks: "03-logstash-writer.yml"
+
+- name: "Create Logstash keystore"
+  include_tasks: "04-logstash-keystore.yml"
 
 - name: "Configure Logstash"
-  include_tasks: "04-configure.yml"
+  include_tasks: "05-configure.yml"

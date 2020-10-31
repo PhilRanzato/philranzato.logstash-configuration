@@ -1,0 +1,9 @@
+{
+  "cluster": ["manage_index_templates", "monitor", "manage_ilm"], 
+  "indices": [
+    {
+      "names": [ {% for ip in logstash_writer.index_patterns %}"{{ ip }}"{% if not loop.last %}, {% endif %}{% endfor %} ], 
+      "privileges": ["write","create","delete","create_index","manage","manage_ilm"]  
+    }
+  ]
+}

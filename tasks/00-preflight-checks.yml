@@ -1,0 +1,25 @@
+---
+# - name: "End the play if the directory specified for the certificates does not exists"
+#   meta: end_play
+#   when: "logstash.certificates.dir is directory"
+
+- name: "End the play for hosts that do not run CentOS or RHEL"
+  meta: end_host
+  when:
+  - ansible_distribution != 'CentOS' and ansible_distribution != 'RedHat' 
+
+- name: "Ensure builtin_passwords file exists on the ansible master"
+  when: logstash_system_password | length == 0
+  delegate_to: localhost
+  block:
+  - name: "Check if the file exists"
+    stat:
+      path: "{{ playbook_dir }}/files/builtin_passwords.json"
+    register: builtin_passwords
+    ignore_errors: true
+    become: true
+
+  - name: "Fail if it does not exist"
+    fail:
+      msg: "Builtin passwords file is missing. You may want to move it at {{ playbook_dir }}/files/builtin_passwords.json"
+    when: not builtin_passwords.stat.exists

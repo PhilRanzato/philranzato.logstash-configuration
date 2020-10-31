@@ -1,0 +1,81 @@
+---
+- name: "Build elasticsearch API URL"
+  block:
+    - name: "Set HTTPS Schema"
+      set_fact:
+        es_api_schema: "https"
+      when: xpack.monitoring.elasticsearch.ssl.enabled
+
+    - name: "Set HTTP Schema"
+      set_fact:
+        es_api_schema: "http"
+      when: not xpack.monitoring.elasticsearch.ssl.enabled
+
+    - name: "Set elasticsearch API URL"
+      set_fact:
+        es_api_url: "{{ es_api_schema }}://{{ hostvars[groups[elasticsearch_primary_master_group_name][0]].ansible_default_ipv4.address }}:{{ elasticsearch_http_port }}"
+      when: xpack.monitoring.elasticsearch.ssl.enabled
+
+- name: "Create a temporary file to store the logstash writer role"
+  tempfile:
+    suffix: .json
+    prefix: ansible
+  register: logstash_writer_role_file
+
+- name: "Template logstash_writer role file"
+  template:
+    src: "logstash_writer_role.json.j2"
+    dest: "{{ logstash_writer_role_file.path }}"
+  become: true
+
+- name: "Create logstash_writer role on elasticsearch"
+  uri:
+    url: "{{ es_api_url }}/_xpack/security/role/logstash_writer"
+    method: POST
+    user: elastic
+    password: "{{ elastic_password }}"
+    force_basic_auth: yes
+    src: "{{ logstash_writer_role_file.path }}"
+    headers:
+      Content-Type: application/json
+    remote_src: yes
+    return_content: true
+    validate_certs: false
+
+- name: "Remove the temporary file for the logstash writer role"
+  file:
+    path: "{{ logstash_writer_role_file.path }}"
+    state: absent
+  when: logstash_writer_role_file.path is defined
+
+- name: "Create a temporary file to store the internal user"
+  tempfile:
+    suffix: .json
+    prefix: ansible
+  register: logstash_internal_user_file
+
+- name: "Template logstash_internal user file"
+  template:
+    src: "logstash_internal_user.json.j2"
+    dest: "{{ logstash_internal_user_file.path }}"
+  become: true
+
+- name: "Create logstash_internal user on elasticsearch"
+  uri:
+    url: "{{ es_api_url }}/_xpack/security/user/logstash_internal"
+    method: POST
+    user: elastic
+    password: "{{ elastic_password }}"
+    force_basic_auth: yes
+    src: "{{ logstash_internal_user_file.path }}"
+    headers:
+      Content-Type: application/json
+    remote_src: true
+    return_content: true
+    validate_certs: false
+
+- name: "Remove the temporary file for the logstash internal user"
+  file:
+    path: "{{ logstash_internal_user_file.path }}"
+    state: absent
+  when: logstash_internal_user_file.path is defined

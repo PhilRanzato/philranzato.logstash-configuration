@@ -1,0 +1,110 @@
+---
+- name: "Build elasticsearch API URL"
+  block:
+    - name: "Set HTTPS Schema"
+      set_fact:
+        es_api_schema: "https"
+      when: xpack.monitoring.elasticsearch.ssl.enabled
+
+    - name: "Set HTTP Schema"
+      set_fact:
+        es_api_schema: "http"
+      when: not xpack.monitoring.elasticsearch.ssl.enabled
+
+    - name: "Set elasticsearch API URL"
+      set_fact:
+        es_api_url: "{{ es_api_schema }}://{{ hostvars[elasticsearch_primary_master_group_name].ansible_default_ipv4.address }}:{{ elasticsearch_http_port }}"
+      when: xpack.monitoring.elasticsearch.ssl.enabled
+
+- name: "Create a temporary file to store the logstash writer role"
+  tempfile:
+    suffix: .json
+    prefix: ansible
+  register: logstash_writer_role_file
+
+- name: "Template logstash_writer role file"
+  template:
+    src: "logstash_writer_role.json.j2"
+    dest: "{{ logstash_writer_role_file.path }}"
+  become: true
+
+- name: "Create logstash_writer role on elasticsearch"
+  uri:
+    url: "{{ es_api_url }}/_xpack/security/role/logstash_writer"
+    method: POST
+    user: elastic
+    password: "{{ elastic_password }}"
+    src: "{{ logstash_writer_role_file.path }}"
+    headers:
+      Content-Type: application/json
+    return_content: true
+    validate_certs: false
+
+- name: "Remove the temporary file for the logstash writer role"
+  file:
+    path: "{{ logstash_writer_role_file.path }}"
+    state: absent
+  when: logstash_writer_role_file.path is defined
+
+- name: "Create a temporary file to store the internal user"
+  tempfile:
+    suffix: .json
+    prefix: ansible
+  register: logstash_internal_user_file
+
+- name: "Template logstash_internal user file"
+  template:
+    src: "logstash_internal_user.json.j2"
+    dest: "{{ logstash_internal_user_file.path }}"
+  become: true
+
+- name: "Create logstash_internal user on elasticsearch"
+  uri:
+    url: "{{ es_api_url }}/_xpack/security/user/logstash_internal"
+    method: POST
+    user: elastic
+    password: "{{ elastic_password }}"
+    src: "{{ logstash_internal_user_file.path }}"
+    headers:
+      Content-Type: application/json
+    return_content: true
+    validate_certs: false
+
+- name: "Remove the temporary file for the logstash internal user"
+  file:
+    path: "{{ logstash_internal_user_file.path }}"
+    state: absent
+  when: logstash_internal_user_file.path is defined
+
+# cat << EOF > /etc/sysconfig/logstash
+# LOGSTASH_KEYSTORE_PASS=xxxx
+# EOF
+# chmod 600 /etc/sysconfig/logstash
+- name: "Template Logstash keystore password"
+  template:
+    src: "logstash.j2"
+    dest: "/etc/sysconfig/logstash"
+    mode: '0600'
+  notify: "Stop Logstash"
+  become: true
+
+# export LOGSTASH_KEYSTORE_PASS=xxxxx
+- name: Add LOGSTASH_KEYSTORE_PASS in /etc/environment
+  lineinfile:
+    dest: "/etc/environment"
+    state: present
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value}}"
+  loop: "{{ os_environment }}"
+  become: true
+
+# sudo -E /usr/share/logstash/bin/logstash-keystore --path.settings /etc/logstash create
+- name: "Create Logstash keystore"
+  command: "/usr/share/logstash/bin/logstash-keystore --path.settings {{ logstash.conf_dir }} create"
+  become: true
+  become_flags: '-E'
+
+# /usr/share/logstash/bin/logstash-keystore add LOGSTASH_WRITER_PASSWORD --path.settings /etc/logstash
+- name: "Insert logstash writer password inside keystore"
+  command: "/usr/share/logstash/bin/logstash-keystore add LOGSTASH_WRITER_PASSWORD --path.settings {{ logstash.conf_dir }}"
+  become: true

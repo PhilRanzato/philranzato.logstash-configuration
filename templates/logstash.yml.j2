@@ -11,13 +11,15 @@ pipeline.ordered: {{ pipeline.ordered }}
 xpack.monitoring.enabled: {{ xpack.monitoring.enabled | lower }}
 xpack.monitoring.elasticsearch.username: {{ xpack.monitoring.elasticsearch.username }}
 xpack.monitoring.elasticsearch.password: {{ xpack.monitoring.elasticsearch.password }}
-xpack.monitoring.elasticsearch.hosts: [{% for es in groups['elasticsearch_master'] %}"https://{{ hostvars[es].ansible_default_ipv4.address }}:{{ elasticsearch_http_port }}"{% if not loop.last %},{% endif %}{% endfor %}]
+xpack.monitoring.elasticsearch.hosts: [{% for es in groups[elasticsearch_masters_group_name] %}"https://{{ hostvars[es].ansible_default_ipv4.address }}:{{ elasticsearch_http_port }}"{% if not loop.last %},{% endif %}{% endfor %}]
+{% if xpack.monitoring.elasticsearch.ssl.enabled %}
 xpack.monitoring.elasticsearch.ssl.certificate_authority: {{ xpack.monitoring.elasticsearch.ssl.certificate_authority }}
 xpack.monitoring.elasticsearch.ssl.truststore.path: {{ xpack.monitoring.elasticsearch.ssl.truststore.path }}
 xpack.monitoring.elasticsearch.ssl.truststore.password: {{ xpack.monitoring.elasticsearch.ssl.truststore.password }}
 xpack.monitoring.elasticsearch.ssl.keystore.path: {{ xpack.monitoring.elasticsearch.ssl.keystore.path }}
 xpack.monitoring.elasticsearch.ssl.keystore.password: {{ xpack.monitoring.elasticsearch.ssl.keystore.password }}
 xpack.monitoring.elasticsearch.ssl.verification_mode: {{ xpack.monitoring.elasticsearch.ssl.verification_mode }}
+{% endif %}
 xpack.monitoring.elasticsearch.sniffing: {{ xpack.monitoring.elasticsearch.sniffing | lower }}
 xpack.monitoring.collection.interval: {{ xpack.monitoring.collection.interval}}
 xpack.monitoring.collection.pipeline.details.enabled: {{ xpack.monitoring.collection.pipeline.details.enabled | lower }}

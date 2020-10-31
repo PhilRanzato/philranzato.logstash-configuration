@@ -5,9 +5,21 @@ os_environment:
 - key: LOGSTASH_KEYSTORE_PASS 
   value: "{{ keystore_pass }}"  
 
-logstash_user: logstash_system
+# logstash_system user
+logstash_system_user: logstash_system
 # Leave it blank if you have the builtin_passwords file
-logstash_password: ""
+logstash_system_password: ""
+
+# elastic user
+# Leave it blank if you have the builtin_passwords file
+elastic_password: ""
+
+logstash_internal:
+  password: "Logstash-Internal"
+
+logstash_writer:
+  index_patterns:
+  - "logstash-*"
 
 ca:
   dir: /etc/logstash
@@ -24,10 +36,12 @@ logstash:
   keystore:
     path: "/etc/logstash/lgs.p12"
     password: "test"
-  user: "{{ logstash_user }}"
-  password: "{{ logstash_password }}"
+  user: "{{ logstash_system_user }}"
+  password: "{{ logstash_system_password }}"
 
 elasticsearch_http_port: "9200"
+elasticsearch_primary_master_group_name: "elasticsearch_primary_master"
+elasticsearch_masters_group_name: "elasticsearch_master"
 
 # /etc/logstash/logstash.yml
 node:
@@ -48,6 +62,7 @@ xpack:
         password: "{{ logstash.password }}"
         sniffing: false
         ssl:
+          enabled: false
           certificate_authority: "{{ ca.dir }}/{{ ca.cert }}"
           truststore:
             path: "{{ logstash.truststore.path }}"

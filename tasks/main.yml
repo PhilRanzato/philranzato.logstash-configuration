@@ -3,10 +3,13 @@
   include_tasks: "00-preflight-checks.yml"
   
 - name: "Get logstash user password"
-  include_tasks: "01-logstash-user.yml"
+  include_tasks: "01-logstash-system-password.yml"
+
+- name: "Get elastic user password"
+  include_tasks: "02-elastic-password.yml"
+
+- name: "Create Logstash Writer role and Logstash internal user"
+  include_tasks: "03-logstash-keystore.yml"
 
 - name: "Configure Logstash"
-  include_tasks: "02-configure.yml"
-
-# - name: "Creates Logstash keystore"
-#   include_tasks: "99-logstash-keystore.yml"
+  include_tasks: "04-configure.yml"

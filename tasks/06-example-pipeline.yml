@@ -1,0 +1,12 @@
+---
+- name: "Template Logstash pipelines.yml"
+  template:
+    src: "pipelines.yml.j2"
+    dest: "{{ logstash.conf_dir }}/pipelines.yml"
+  become: true
+
+- name: "Template Logstash example pipeline"
+  template:
+    src: "example-pipeline.conf.j2"
+    dest: "{{ logstash.conf_dir }}/conf.d/example-pipeline.conf"
+  become: true

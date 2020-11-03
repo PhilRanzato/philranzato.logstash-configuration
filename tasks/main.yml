@@ -16,3 +16,15 @@
 
 - name: "Configure Logstash"
   include_tasks: "05-configure.yml"
+
+- name: "Add an example pipeline"
+  include_tasks: "06-example-pipeline.yml"
+  when: include_example_pipeline
+
+- name: "Set correct permissions to logstash configuration folder"
+  file:
+    path: "{{ logstash.conf_dir }}"
+    owner: logstash
+    group: logstash
+    recurse: yes
+  become: true

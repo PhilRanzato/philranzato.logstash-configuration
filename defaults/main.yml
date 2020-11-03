@@ -21,6 +21,8 @@ logstash_writer:
   index_patterns:
   - "logstash-*"
 
+include_example_pipeline: false
+
 ca:
   dir: /etc/logstash
   cert: "elastic-CA.crt"

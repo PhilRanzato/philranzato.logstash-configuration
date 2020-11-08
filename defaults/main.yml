@@ -22,6 +22,14 @@ logstash_writer:
   - "logstash-*"
 
 include_example_pipeline: false
+include_filebeat_pipeline: false
+filebeat:
+  ca_path: /etc/logstash/elastic-CA.crt
+  logstash_server: 
+    cert: /etc/logstash/logstash-filebeat.crt
+    # THIS KEY MUST BE IN PKCS8 FORMAT, see documentation
+    key:  /etc/logstash/logstash-filebeat.key
+    key_pass: "P4ssword!"
 
 ca:
   dir: /etc/logstash

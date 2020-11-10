@@ -56,6 +56,19 @@ logstash_writer:
   index_patterns:
   - "logstash-*"
 
+# Wheter to include an example pipeline for output
+include_example_pipeline: false
+# Wheter to include an example pipeline for filebeat input
+include_filebeat_pipeline: false
+# Filebeat input configuration
+filebeat:
+  ca_path: /etc/logstash/elastic-CA.crt
+  logstash_server: 
+    cert: /etc/logstash/logstash-filebeat.crt
+    # THIS KEY MUST BE IN PKCS8 FORMAT, see documentation
+    key:  /etc/logstash/logstash-filebeat.key
+    key_pass: "P4ssword!"
+
 # CA parameters
 ca:
   dir: /etc/logstash

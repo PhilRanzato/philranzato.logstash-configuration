@@ -1,0 +1,28 @@
+input {
+  beats {
+    port => 5044
+    ssl => true
+    ssl_certificate_authorities => ["{{ filebeat.ca_path }}"]
+    ssl_certificate => "{{ filebeat.logstash_server.cert }}"
+    ssl_key => "{{ filebeat.logstash_server.key }}"
+    ssl_key_passphrase => "{{ filebeat.logstash_server.key_pass }}"
+    ssl_verify_mode => "force_peer"
+  }
+}
+
+
+output {
+  elasticsearch {
+    id => "output-elasticsearch"
+    hosts => [{% for es in groups[elasticsearch_masters_group_name] %}"https://{{ hostvars[es].ansible_default_ipv4.address }}:{{ elasticsearch_http_port }}"{% if not loop.last %},{% endif %}{% endfor %}]
+    cacert => "{{ ca.dir }}/{{ ca.cert }}"
+    ssl => true
+    keystore => "{{ logstash.conf_dir }}/logstash.keystore"
+    keystore_password => "${LOGSTASH_KEYSTORE_PASS}"
+    ilm_enabled => false
+    index => "logstash-%{+YYYY.MM.dd}"
+    manage_template => false
+    user => "logstash_internal"
+    password => "${LOGSTASH_WRITER_PASSWORD}"
+  }
+}

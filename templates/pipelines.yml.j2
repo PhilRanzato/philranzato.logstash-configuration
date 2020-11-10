@@ -1,2 +1,8 @@
+{% if include_example_pipeline is defined and include_example_pipeline %}
 - pipeline.id: example-pipeline
   path.config: "{{ logstash.conf_dir }}/conf.d/example-pipeline.conf"
+{% endif %}
+{% if include_filebeat_pipeline is defined and include_filebeat_pipeline %}
+- pipeline.id: filebeat-pipeline
+  path.config: "{{ logstash.conf_dir }}/conf.d/filebeat-pipeline.conf"
+{% endif %}

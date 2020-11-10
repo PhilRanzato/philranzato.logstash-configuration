@@ -1,30 +1,40 @@
 ---
 - name: "Preflight Checks"
   include_tasks: "00-preflight-checks.yml"
-  
+  when: include_filebeat_pipeline is not defined or not include_filebeat_pipeline
+
 - name: "Get logstash user password"
   include_tasks: "01-logstash-system-password.yml"
+  when: include_filebeat_pipeline is not defined or not include_filebeat_pipeline
 
 - name: "Get elastic user password"
   include_tasks: "02-elastic-password.yml"
+  when: include_filebeat_pipeline is not defined or not include_filebeat_pipeline
 
 - name: "Create Logstash Writer role and Logstash internal user"
   include_tasks: "03-logstash-writer.yml"
+  when: include_filebeat_pipeline is not defined or not include_filebeat_pipeline
 
 - name: "Create Logstash keystore"
   include_tasks: "04-logstash-keystore.yml"
+  when: include_filebeat_pipeline is not defined or not include_filebeat_pipeline
 
 - name: "Configure Logstash"
   include_tasks: "05-configure.yml"
+  when: include_filebeat_pipeline is not defined or not include_filebeat_pipeline
 
 - name: "Add an example pipeline"
   include_tasks: "06-example-pipeline.yml"
-  when: include_example_pipeline
+  when: (include_filebeat_pipeline is not defined or not include_filebeat_pipeline) and include_example_pipeline
+
+- name: "Add Filebeat pipeline"
+  include_tasks: "07-filebeat-pipeline.yml"
+  when: include_filebeat_pipeline
 
 - name: "Set correct permissions to logstash configuration folder"
   file:
     path: "{{ logstash.conf_dir }}"
-    owner: logstash
+    owner: root
     group: logstash
     recurse: yes
   become: true
